@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小马宝莉大冒险 - 闯关版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- UI 层 -->
+        <div id="ui-layer">
+            <!-- 抬头显示 HUD -->
+            <div id="hud" class="hidden">
+                <div class="hud-left">
+                    <div class="hearts-container">
+                        <span id="hearts">❤️❤️❤️</span>
+                    </div>
+                    <div class="coin-container-hud" style="margin-left: 10px;">
+                        🪙 <span id="hud-coin-count">0</span>
+                    </div>
+                </div>
+                <div class="hud-center">
+                    <div class="level-container">
+                        第 <span id="level-num">1</span> 关
+                    </div>
+                    <div class="distance-container">
+                        🚩 <span id="distance">0 / 200</span> m
+                    </div>
+                </div>
+                <div class="hud-right">
+                    <button id="pause-btn" class="btn small-btn icon-btn">⏸️</button>
+                </div>
+            </div>
+
+            <!-- 暂停界面 -->
+            <div id="pause-screen" class="screen hidden">
+                <div class="modal">
+                    <h2>⏸️ 暂停中</h2>
+                    <div class="btn-group">
+                        <button id="resume-btn" class="btn primary-btn">▶️ 继续奔跑</button>
+                        <button id="exit-btn" class="btn secondary-btn">🚪 退出关卡</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 登录/昵称界面 -->
+            <div id="login-screen" class="screen hidden">
+                <div class="modal">
+                    <h2>👋 欢迎来到小马王国</h2>
+                    <p>给自己取个响亮的昵称吧！</p>
+                    <input type="text" id="nickname-input" placeholder="输入昵称..." style="font-size: 20px; padding: 10px; border-radius: 10px; border: 2px solid #FF9800; margin: 20px 0; width: 80%; text-align: center;">
+                    <button id="login-btn" class="btn primary-btn">开始冒险</button>
+                </div>
+            </div>
+
+            <!-- 关卡地图界面 -->
+            <div id="level-map-screen" class="screen hidden">
+                <h1 class="map-title">🏰 小马宝莉王国</h1>
+                
+                <div style="position: absolute; top: 10px; right: 10px;">
+                    <button id="logout-btn" class="btn secondary-btn small-btn" style="font-size: 14px; padding: 5px 10px;">👋 切换账号</button>
+                </div>
+                
+                <div class="map-actions-grid">
+                    <button id="endless-btn" class="btn primary-btn locked-mode full-width">♾️ 快乐无限跑</button>
+                    <button id="achievements-btn" class="btn secondary-btn small-btn">⭐ 成就</button>
+                    <button id="shop-btn" class="btn secondary-btn small-btn">🏪 商店</button>
+                    <button id="help-btn" class="btn secondary-btn small-btn">❓ 玩法</button>
+                    <button id="calendar-btn" class="btn secondary-btn small-btn">📅 日历</button>
+                    <button id="bgm-btn" class="btn secondary-btn small-btn">🎵 音乐</button>
+                </div>
+
+                <div id="level-grid" class="level-grid">
+                    <!-- 关卡按钮将由 JS 动态生成 -->
+                </div>
+                <div class="map-footer">
+                </div>
+            </div>
+
+            <!-- 商店界面 -->
+            <div id="shop-screen" class="screen hidden">
+                <div class="modal large-modal">
+                    <h2>🏪 小马商店</h2>
+                    <div class="coin-display-shop">
+                        您的金币: 🪙 <span id="shop-coin-count">0</span>
+                    </div>
+                    <div id="shop-grid" class="shop-grid">
+                        <!-- 动态生成 -->
+                    </div>
+                    <button id="close-shop-btn" class="btn secondary-btn">🔙 返回地图</button>
+                </div>
+            </div>
+
+            <!-- 成就界面 -->
+            <div id="achievements-screen" class="screen hidden">
+                <div class="modal large-modal">
+                    <h2>⭐ 我的小成就</h2>
+                    <div id="achievements-list" class="achievements-grid">
+                        <!-- 动态生成 -->
+                    </div>
+                    <button id="close-achievements-btn" class="btn secondary-btn">🔙 返回地图</button>
+                </div>
+            </div>
+
+            <!-- 日历界面 -->
+            <div id="calendar-screen" class="screen hidden">
+                <div class="modal large-modal">
+                    <h2>📅 冒险日历</h2>
+                    <div class="calendar-header">
+                        <span id="calendar-month">2023年10月</span>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Days generated by JS -->
+                    </div>
+                    <div class="daily-stats" id="daily-stats">
+                        <p>点击日期查看记录</p>
+                    </div>
+                    <button id="close-calendar-btn" class="btn secondary-btn">🔙 返回地图</button>
+                </div>
+            </div>
+
+            <!-- 帮助界面 -->
+            <div id="help-screen" class="screen hidden">
+                <div class="modal large-modal help-modal">
+                    <h2>📘 玩法说明</h2>
+                    <div class="help-content">
+                        <div class="help-section">
+                            <h3>🎮 如何操作</h3>
+                            <p>👆 <strong>点击屏幕 / 按空格</strong>：跳跃（躲避地面障碍）</p>
+                            <p>👆👆 <strong>空中再点一次</strong>：二段跳（跳得更高！）</p>
+                            <p>👇 <strong>下滑 / 按下箭头</strong>：滑铲（躲避空中障碍）</p>
+                            <p>⬅️ / ➡️ <strong>左右方向键</strong>：前后移动（灵活走位）</p>
+                            <p>💥 <strong>注意 Boss</strong>：小心远程攻击！</p>
+                        </div>
+                        <div class="help-section">
+                            <h3>✨ 神奇道具</h3>
+                            <div class="powerup-list">
+                                <div class="powerup-item">
+                                    <span class="p-icon">💖</span>
+                                    <span class="p-desc"><strong>爱心</strong>：恢复 1 点生命值</span>
+                                </div>
+                                <div class="powerup-item">
+                                    <span class="p-icon">🛡️</span>
+                                    <span class="p-desc"><strong>护盾</strong>：抵挡 1 次撞击伤害</span>
+                                </div>
+                                <div class="powerup-item">
+                                    <span class="p-icon">🧲</span>
+                                    <span class="p-desc"><strong>磁铁</strong>：自动吸取周围的爱心</span>
+                                </div>
+                                <div class="powerup-item">
+                                    <span class="p-icon">🍄</span>
+                                    <span class="p-desc"><strong>蘑菇</strong>：变大！无视小障碍</span>
+                                </div>
+                                <div class="powerup-item">
+                                    <span class="p-icon">🧪</span>
+                                    <span class="p-desc"><strong>药水</strong>：变小！轻松钻过空隙</span>
+                                </div>
+                                <div class="powerup-item">
+                                    <span class="p-icon">🌟</span>
+                                    <span class="p-desc"><strong>星星</strong>：获得复活祝福（满血复活！）</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="close-help-btn" class="btn primary-btn">明白啦！</button>
+                </div>
+            </div>
+
+            <!-- 开始/准备界面 (点击关卡后显示) -->
+            <div id="start-screen" class="screen hidden">
+                <h1 class="game-title">🐎 准备出发</h1>
+                <p class="game-intro">点击屏幕或按空格跳跃</p>
+                <div class="horse-preview" id="preview-container">
+                    <!-- Skin preview -->
+                </div>
+                <button id="start-btn" class="btn primary-btn">开始奔跑</button>
+                <button id="back-map-btn" class="btn secondary-btn">🔙 返回地图</button>
+            </div>
+
+            <!-- 结算界面 -->
+            <div id="game-over-screen" class="screen hidden">
+                <div class="modal">
+                    <h2 id="result-title">🏁 跑完啦！</h2>
+                    <p id="result-msg">你的小马超努力的～</p>
+                    
+                    <div class="score-board">
+                        <div class="score-item">
+                            <span class="label">跑了</span>
+                            <span class="value" id="final-distance">0</span>
+                            <span class="unit">米</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="label">剩余</span>
+                            <span class="value" id="final-hearts">❤️❤️❤️</span>
+                        </div>
+                    </div>
+
+                    <div id="title-display" class="title-animation">
+                        <span class="title-text">✨ 开心赛马手 ✨</span>
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="restart-btn" class="btn primary-btn">🐎 再跑一次</button>
+                        <button id="share-btn" class="btn secondary-btn" style="background-color: #9C27B0;">📸 晒战绩</button>
+                        <button id="next-level-btn" class="btn secondary-btn hidden">➡️ 下一关</button>
+                        <button id="return-map-btn" class="btn secondary-btn">🗺️ 返回地图</button>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button id="skin-btn" class="btn secondary-btn small-btn hidden">🎨 换个小马</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分享弹窗 -->
+            <div id="share-screen" class="screen hidden">
+                <div class="modal" style="background: rgba(0,0,0,0.8); max-width: 90%;">
+                    <h2 style="color: white; margin-bottom: 10px;">📸 你的高光时刻</h2>
+                    <div class="share-img-container" style="background: white; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
+                        <img id="share-img" style="max-width: 100%; max-height: 60vh; border-radius: 5px;" />
+                    </div>
+                    <p style="color: white; font-size: 14px; margin-bottom: 20px;">长按图片保存或分享给朋友</p>
+                    <button id="close-share-btn" class="btn primary-btn">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/constants.js"></script>
+    <script src="js/AudioController.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/Particle.js"></script>
+    <script src="js/Background.js"></script>
+    <script src="js/Obstacle.js"></script>
+    <script src="js/PowerUp.js"></script>
+    <script src="js/Coin.js"></script>
+    <script src="js/Boss.js"></script>
+    <script src="js/Player.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/InputManager.js"></script>
+    <script src="js/TutorialManager.js"></script>
+    <script src="js/Game.js"></script>
+</body>
+</html>

@@ -1,0 +1,778 @@
+:root {
+    --sky-top: #87CEEB;
+    --sky-bottom: #E0F7FA;
+    --grass-color: #90EE90;
+    --primary-color: #FF9800; /* 橙色按钮 */
+    --secondary-color: #4CAF50; /* 绿色按钮 */
+    --text-color: #5D4037; /* 深褐色文字 */
+    --modal-bg: rgba(255, 255, 255, 0.95);
+    --font-family: "Comic Sans MS", "Chalkboard SE", "Soft", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-family);
+    background-color: #333; /* 容器外背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px; /* 限制最大宽度，适合 H5 */
+    height: 100%;
+    max-height: 900px;
+    background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 70%, var(--grass-color) 70%, var(--grass-color) 100%);
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    transition: background 1s ease; /* 平滑过渡背景 */
+}
+
+/* 主题背景样式 */
+/* 草原 (默认) */
+.theme-meadow {
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 70%, #90EE90 70%, #90EE90 100%) !important;
+}
+
+/* 沙漠 */
+.theme-desert {
+    background: linear-gradient(to bottom, #FFCC80 0%, #FFF3E0 70%, #FFE0B2 70%, #FFE0B2 100%) !important;
+}
+
+/* 森林 (夜晚) */
+.theme-forest {
+    background: linear-gradient(to bottom, #1A237E 0%, #3949AB 70%, #1B5E20 70%, #1B5E20 100%) !important;
+}
+
+/* 梦幻 */
+.theme-dream {
+    background: linear-gradient(to bottom, #F8BBD0 0%, #F48FB1 70%, #CE93D8 70%, #CE93D8 100%) !important;
+}
+
+/* 新增主题样式 */
+/* 海滩 */
+.theme-beach {
+    background: linear-gradient(to bottom, #4FC3F7 0%, #B3E5FC 70%, #FFEB3B 70%, #FFEB3B 100%) !important;
+}
+
+/* 农场 */
+.theme-farm {
+    background: linear-gradient(to bottom, #FFCC80 0%, #FFE0B2 70%, #795548 70%, #795548 100%) !important;
+}
+
+/* 城市 */
+.theme-city {
+    background: linear-gradient(to bottom, #B0BEC5 0%, #CFD8DC 70%, #9E9E9E 70%, #9E9E9E 100%) !important;
+}
+
+/* 雪地 */
+.theme-snow {
+    background: linear-gradient(to bottom, #B3E5FC 0%, #E1F5FE 70%, #E0F7FA 70%, #E0F7FA 100%) !important;
+}
+
+/* 火山 */
+.theme-volcano {
+    background: linear-gradient(to bottom, #3E2723 0%, #5D4037 70%, #BF360C 70%, #BF360C 100%) !important;
+}
+
+/* 太空 */
+.theme-space {
+    background: linear-gradient(to bottom, #311B92 0%, #4527A0 70%, #6200EA 70%, #6200EA 100%) !important;
+}
+
+/* 彩虹 */
+.theme-rainbow {
+    background: linear-gradient(to bottom, #F48FB1 0%, #CE93D8 20%, #90CAF9 40%, #A5D6A7 60%, #FFF59D 80%, #FFCC80 100%) !important;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 让点击穿透到 canvas，除非点击了按钮 */
+}
+
+/* 允许 UI 元素接收点击 */
+#ui-layer > * {
+    pointer-events: auto;
+}
+
+.map-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.locked-mode {
+    filter: grayscale(1);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.large-modal {
+    width: 90%;
+    max-width: 500px;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+.achievements-grid {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.achievement-item {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.5; /* Locked state */
+    transition: opacity 0.3s;
+}
+
+.achievement-item.unlocked {
+    opacity: 1;
+    border: 2px solid #FFD700;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.achievement-icon {
+    font-size: 30px;
+}
+
+.achievement-info {
+    text-align: left;
+}
+
+.achievement-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.achievement-desc {
+    font-size: 12px;
+    color: #666;
+}
+
+.coin-display-map {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #F57F17;
+    margin-bottom: 15px;
+    border: 2px solid #F57F17;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+}
+
+.coin-container-hud {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #F57F17;
+}
+
+.shop-grid {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 10px;
+}
+
+.shop-item {
+    background: white;
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    border: 2px solid #EEE;
+    transition: transform 0.1s;
+    cursor: pointer;
+}
+
+.shop-item:active {
+    transform: scale(0.95);
+}
+
+.shop-item.selected {
+    border: 3px solid var(--secondary-color);
+    background: #E8F5E9;
+}
+
+.shop-item.locked {
+    opacity: 0.8;
+    background: #F5F5F5;
+}
+
+.shop-preview {
+    font-size: 40px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shop-info {
+    text-align: center;
+}
+
+.shop-name {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.shop-price {
+    font-size: 12px;
+    color: #F57F17;
+    font-weight: bold;
+}
+
+.shop-btn {
+    padding: 5px 15px;
+    border-radius: 15px;
+    border: none;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.btn-buy {
+    background: #FF9800;
+    color: white;
+}
+
+.btn-select {
+    background: #4CAF50;
+    color: white;
+}
+
+.coin-display-shop {
+    font-size: 20px;
+    font-weight: bold;
+    color: #F57F17;
+    margin-bottom: 10px;
+}
+
+/* 关卡地图 */
+.map-title {
+    font-size: 48px;
+    color: var(--primary-color);
+    text-shadow: 3px 3px 0px #FFF;
+    margin-bottom: 20px;
+    animation: bounce 2s infinite;
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5列，两行 */
+    gap: 15px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    max-width: 500px; /* Wider for 5 cols */
+}
+
+.level-btn {
+    width: 60px; /* Smaller buttons */
+    height: 60px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    background-color: #FFF;
+    color: var(--text-color);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    transition: transform 0.1s, background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 2px;
+}
+
+.level-num {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.level-icon {
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.level-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.level-btn.locked {
+    background-color: #CCC;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.level-btn.unlocked {
+    background-color: #FFF;
+    border: 3px solid var(--primary-color);
+}
+
+.level-btn.completed {
+    background-color: var(--grass-color);
+    color: #FFF;
+    border: 3px solid #FFF;
+}
+
+.level-btn.completed::after {
+    content: '⭐';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 20px;
+}
+
+.map-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.map-intro {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+/* 隐藏 */
+/* 帮助界面样式 */
+.help-modal {
+    text-align: left;
+    padding: 20px 30px;
+}
+
+.help-content {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.help-section {
+    margin-bottom: 25px;
+    background: rgba(255,255,255,0.8);
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.help-section h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    border-bottom: 2px solid #EEE;
+    padding-bottom: 10px;
+}
+
+.help-section p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 10px 0;
+    color: #444;
+}
+
+.powerup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.powerup-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #FFF;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.p-icon {
+    font-size: 32px;
+}
+
+.p-desc {
+    font-size: 16px;
+    color: #555;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 屏幕覆盖层 */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Changed from flex-start to center */
+    height: 60px; /* Fixed height for easier alignment */
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-color);
+    text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+    pointer-events: none;
+}
+
+.hud-left, .hud-right {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    height: 100%; /* Fill HUD height */
+}
+
+.hud-center {
+    position: absolute;
+    left: 50%;
+    top: 50%; /* Center vertically in HUD */
+    transform: translate(-50%, -50%); /* True center */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.8);
+    color: var(--text-color);
+    border: 2px solid var(--text-color);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.level-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 15px;
+    border-radius: 15px;
+    border: 2px solid var(--primary-color);
+}
+
+.small-btn {
+    padding: 8px 20px;
+    font-size: 16px;
+}
+
+/* 开始界面 */
+.game-title {
+    font-size: 48px;
+    color: var(--primary-color);
+    text-shadow: 3px 3px 0px #FFF;
+    margin-bottom: 10px;
+    animation: bounce 2s infinite;
+}
+
+.game-intro {
+    font-size: 18px;
+    color: var(--text-color);
+    margin-bottom: 30px;
+}
+
+.horse-preview {
+    font-size: 80px;
+    margin-bottom: 40px;
+    animation: gallop 1s infinite alternate;
+}
+
+/* 按钮样式 */
+.btn {
+    padding: 15px 40px;
+    font-size: 24px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin: 10px;
+}
+
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+}
+
+.secondary-btn {
+    background-color: var(--secondary-color);
+    font-size: 18px;
+    padding: 12px 30px;
+}
+
+/* 结算弹窗 */
+.modal {
+    background-color: var(--modal-bg);
+    padding: 30px;
+    border-radius: 30px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border: 5px solid #FFF;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#result-title {
+    font-size: 32px;
+    color: var(--text-color);
+    margin: 0 0 10px 0;
+}
+
+#result-msg {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.score-board {
+    background-color: #FFF;
+    padding: 15px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.score-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.score-item .label {
+    font-size: 14px;
+    color: #999;
+}
+
+.score-item .value {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.title-animation {
+    margin-bottom: 25px;
+    padding: 10px;
+    background-color: #FFF9C4; /* 浅黄色背景 */
+    border-radius: 15px;
+    transform: rotate(-2deg);
+}
+
+.title-text {
+    font-size: 24px;
+    color: #FF5722;
+    font-weight: bold;
+}
+
+/* 动画定义 */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes gallop {
+    0% { transform: rotate(-5deg) translateY(0); }
+    100% { transform: rotate(5deg) translateY(-10px); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Tutorial Overlay */
+.tutorial-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 100;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.tutorial-finger {
+    font-size: 60px;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+}
+
+.tutorial-text {
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.3);
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+@keyframes tap {
+    0% { transform: scale(1); opacity: 0; }
+    50% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes swipe-up {
+    0% { transform: translateY(20px); opacity: 0; }
+    50% { transform: translateY(-20px); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
+}
+
+@keyframes swipe-down {
+    0% { transform: translateY(-20px); opacity: 0; }
+    50% { transform: translateY(20px); opacity: 1; }
+    100% { transform: translateY(40px); opacity: 0; }
+}
+
+/* Calendar Styles */
+.calendar-header {
+    font-size: 24px;
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+    background: #FFF;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.calendar-day {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+.calendar-day.active {
+    background-color: #E0F7FA;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.calendar-day.today {
+    border: 2px solid var(--primary-color);
+}
+
+.calendar-day.has-record {
+    background-color: var(--grass-color);
+    color: white;
+}
+
+.daily-stats {
+    background: #FFF;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+    min-height: 80px;
+}
+
+.daily-stats p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 14px;
+}
+
+.daily-stats .highlight {
+    color: var(--primary-color);
+    font-weight: bold;
+}
