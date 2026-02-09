@@ -26,7 +26,7 @@ function resize() {
 function startGame(level) {
     audio.resume();
     audio.playClick();
-    audio.startBGM(); 
+    audio.playMelody('default'); // Always restart BGM with default melody
     
     if (typeof level === 'number') currentLevel = level;
     
@@ -77,12 +77,16 @@ function update() {
     if (isEndless && score >= 2000) unlockAchievement('endless_master');
 
     if (!isEndless && score >= config.target) {
+        audio.playMelody('victory'); // Victory music
         levelComplete();
         return;
     }
     
     if (!isEndless && score > config.target * 0.6 && boss) {
-        boss.active = true;
+        if (!boss.active) {
+            boss.active = true;
+            audio.playMelody('boss'); // Switch to boss music
+        }
     }
     if (boss && boss.active) boss.update();
     

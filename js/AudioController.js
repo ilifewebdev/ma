@@ -25,13 +25,38 @@ class AudioController {
         this.currentNote = 0;
         this.bgmAudio = null; // For MP3 BGM
         
-        // Synth Melody (Fallback)
-        this.melody = [
-            { f: 261.63, d: 0.2 }, { f: 329.63, d: 0.2 }, { f: 392.00, d: 0.2 }, { f: 329.63, d: 0.2 },
-            { f: 261.63, d: 0.2 }, { f: 196.00, d: 0.2 }, { f: 261.63, d: 0.4 }, { f: 0, d: 0.2 },
-            { f: 261.63, d: 0.2 }, { f: 293.66, d: 0.2 }, { f: 329.63, d: 0.2 }, { f: 349.23, d: 0.2 },
-            { f: 392.00, d: 0.4 }, { f: 392.00, d: 0.4 }, { f: 0, d: 0.2 }
-        ];
+        // Synth Melody (Fallback) - Expanded to be richer
+        this.melodies = {
+            default: [
+                // Section A: Cheerful intro (C Major)
+                { f: 523.25, d: 0.2 }, { f: 659.25, d: 0.2 }, { f: 783.99, d: 0.2 }, { f: 523.25, d: 0.2 },
+                { f: 880.00, d: 0.4 }, { f: 783.99, d: 0.4 }, 
+                { f: 698.46, d: 0.2 }, { f: 659.25, d: 0.2 }, { f: 587.33, d: 0.2 }, { f: 523.25, d: 0.2 },
+                { f: 587.33, d: 0.4 }, { f: 783.99, d: 0.4 },
+                
+                // Section B: Bouncy rhythm
+                { f: 523.25, d: 0.15 }, { f: 0, d: 0.05 }, { f: 523.25, d: 0.15 }, { f: 0, d: 0.05 },
+                { f: 659.25, d: 0.2 }, { f: 783.99, d: 0.2 },
+                { f: 1046.50, d: 0.4 }, { f: 783.99, d: 0.2 }, { f: 523.25, d: 0.2 },
+                { f: 587.33, d: 0.6 }, { f: 0, d: 0.2 }
+            ],
+            boss: [
+                // Urgent / Tension
+                { f: 110, d: 0.1 }, { f: 123, d: 0.1 }, { f: 110, d: 0.1 }, { f: 123, d: 0.1 },
+                { f: 146, d: 0.2 }, { f: 130, d: 0.2 }, { f: 110, d: 0.4 },
+                { f: 98, d: 0.1 }, { f: 110, d: 0.1 }, { f: 130, d: 0.2 }, { f: 0, d: 0.2 }
+            ],
+            victory: [
+                // Fanfare: Sol-Do-Mi-Sol (Arpeggio up)
+                { f: 392.00, d: 0.1 }, { f: 523.25, d: 0.1 }, { f: 659.25, d: 0.1 }, { f: 783.99, d: 0.3 },
+                // High finish
+                { f: 659.25, d: 0.1 }, { f: 783.99, d: 0.1 }, { f: 1046.50, d: 0.8 }, 
+                // Echo/Tail
+                { f: 0, d: 0.2 }, { f: 523.25, d: 0.1 }, { f: 1046.50, d: 0.4 }, { f: 0, d: 1.0 }
+            ]
+        };
+        this.currentMelodyKey = 'default';
+        this.melody = this.melodies['default'];
     }
     
     loadAssets() {
@@ -77,6 +102,20 @@ class AudioController {
         return this.bgmEnabled;
     }
 
+    playMelody(key) {
+        if (!this.melodies[key]) return;
+        if (this.currentMelodyKey === key && this.bgmInterval) return; // Already playing
+        
+        this.stopBGM(); // Stop current
+        
+        this.currentMelodyKey = key;
+        this.melody = this.melodies[key];
+        this.currentNote = 0;
+        this.bgmEnabled = true; // Force enable
+        
+        this.playNextNote();
+    }
+
     startBGM() {
         if (!this.bgmEnabled) return;
         
@@ -114,19 +153,28 @@ class AudioController {
         
         if (note.f > 0) {
             const osc = this.ctx.createOscillator();
+            const osc2 = this.ctx.createOscillator(); // Harmony
             const gain = this.ctx.createGain();
             
-            osc.type = 'triangle'; 
+            osc.type = 'triangle'; // Main melody
+            osc2.type = 'sine';    // Soft harmony
+            
             osc.frequency.setValueAtTime(note.f, this.ctx.currentTime);
+            osc2.frequency.setValueAtTime(note.f * 0.5, this.ctx.currentTime); // Lower octave
             
             gain.gain.setValueAtTime(0.05, this.ctx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + note.d * 0.9);
             
             osc.connect(gain);
+            osc2.connect(gain);
             gain.connect(this.ctx.destination);
             
             osc.start();
-            osc.stop(this.ctx.currentTime + note.d);
+            osc2.start();
+            
+            const stopTime = this.ctx.currentTime + note.d;
+            osc.stop(stopTime);
+            osc2.stop(stopTime);
         }
         
         this.currentNote = (this.currentNote + 1) % this.melody.length;
