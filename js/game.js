@@ -63,14 +63,34 @@ function startGame(level) {
     updateHUD();
     
     if (gameLoopId) cancelAnimationFrame(gameLoopId);
-    gameLoop();
+    
+    // Reset Time
+    lastTime = performance.now();
+    gameLoop(lastTime);
 }
 
-function update() {
-    frames++;
+let lastTime = 0;
+const targetFPS = 60;
+const frameInterval = 1000 / targetFPS;
+
+function update(deltaTime) {
     const config = LEVEL_CONFIGS[currentLevel - 1];
     
+    // Always increment frames for animations
+    frames++;
+    
+    // Scale factor: if device is 120Hz (delta ~8ms), scale ~0.5. If 60Hz (delta ~16ms), scale ~1.
+    // However, since we are throttling gameLoop to targetFPS (60), we can just run logic once per loop
+    // But to be safe on high refresh rate screens where requestAnimationFrame fires faster, our throttle above handles it.
+    
+    // We already throttle in gameLoop to 60 FPS, so we don't need complex delta time scaling for physics 
+    // unless we want to support variable frame rates below 60.
+    // For this simple game, fixed timestep (throttled loop) is safer to prevent tunneling.
+
     score += speed * CONSTANTS.meterScale;
+    
+    // ... rest of update logic ...
+
 
     if (score >= 500) unlockAchievement('dist_500');
     if (score >= 1000) unlockAchievement('dist_1000');
@@ -259,26 +279,31 @@ function draw() {
     player.draw();
 }
 
-function gameLoop() {
-    if (gameState === 'PLAYING' || gameState === 'ENDLESS') {
-        update();
-        draw();
+function gameLoop(timestamp) {
+    if (gameState === 'PAUSED') {
         gameLoopId = requestAnimationFrame(gameLoop);
-    } else if (gameState === 'PAUSED') {
-        // Do nothing
-    } else if (!startScreen.classList.contains('hidden')) {
-        frames++;
-        
-        player.x = canvas.width / 2 - 25;
-        player.y = canvas.height - CONSTANTS.groundHeight - 50;
-        
-        draw(); 
-        gameLoopId = requestAnimationFrame(gameLoop);
-    } else {
-        frames++;
-        draw();
-        gameLoopId = requestAnimationFrame(gameLoop);
+        lastTime = timestamp;
+        return;
     }
+
+    if (!lastTime) lastTime = timestamp;
+    const elapsed = timestamp - lastTime;
+
+    if (elapsed > frameInterval) {
+        lastTime = timestamp - (elapsed % frameInterval);
+        
+        // Capped update
+        if (gameState === 'PLAYING' || gameState === 'ENDLESS') {
+            update(elapsed);
+            draw();
+        } else if (!startScreen.classList.contains('hidden')) {
+            drawStartScreenPreview();
+        } else {
+             draw();
+        }
+    }
+    
+    gameLoopId = requestAnimationFrame(gameLoop);
 }
 
 init();
