@@ -36,6 +36,11 @@ class TutorialManager {
             this.finger.textContent = '👆';
             this.finger.style.animationName = 'tap';
             this.text.textContent = '点击跳跃';
+        } else if (this.activeStep === 3 && frames % 180 === 0) {
+            // New: Teach horizontal movement (Left/Right)
+            this.showHand(player.x - 50, player.y + 50, 'swipe-right');
+            this.text.textContent = "⬅️ ➡️ 左右滑动躲避！";
+            this.activeStep = 4;
         } else if (type === 'doubleJump') {
             this.finger.textContent = '👆👆';
             this.finger.style.animationName = 'tap'; 

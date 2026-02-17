@@ -24,30 +24,49 @@ function setupInputs() {
     });
     
     const gameContainer = document.getElementById('game-container');
+    // Touch Controls
+    let touchStartX = 0;
     let touchStartY = 0;
     
     gameContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
     }, {passive: false});
 
     gameContainer.addEventListener('touchend', (e) => {
         if (gameState !== 'PLAYING') return;
         
+        // Ignore clicks on UI buttons
         if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
         
+        let touchEndX = e.changedTouches[0].clientX;
         let touchEndY = e.changedTouches[0].clientY;
+        
+        let diffX = touchEndX - touchStartX;
         let diffY = touchEndY - touchStartY;
-
-        if (Math.abs(diffY) < 30) {
-            player.jump();
-            audio.resume();
-        } else if (diffY > 30) {
-            player.slide();
-            audio.resume();
-        } else if (diffY < -30) {
-            player.jump();
-            audio.resume();
+        
+        // Check for Horizontal Swipe (Priority: Must be dominant axis and significant distance)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+            if (diffX > 0) {
+                player.move('right');
+                setTimeout(() => player.move('stop'), 200);
+            } else {
+                player.move('left');
+                setTimeout(() => player.move('stop'), 200);
+            }
+        } 
+        // Vertical Swipe or Tap
+        else {
+            if (diffY > 40) {
+                // Swipe Down -> Slide
+                player.slide();
+            } else {
+                // Swipe Up or Tap -> Jump
+                player.jump();
+            }
         }
+        
+        audio.resume();
     });
     
     gameContainer.addEventListener('mousedown', (e) => {
