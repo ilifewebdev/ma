@@ -27,46 +27,70 @@ function setupInputs() {
     // Touch Controls
     let touchStartX = 0;
     let touchStartY = 0;
-    
+    let isSwiping = false;
+
     gameContainer.addEventListener('touchstart', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        isSwiping = false;
+        
+        // Immediate Jump Feedback (Tap to Jump)
+        // If it turns out to be a swipe later, we can handle that, but for games, latency matters.
+        // However, to support 'slide', we shouldn't jump immediately on every touch.
+        // Strategy: Wait for touchend to decide, OR use a very small threshold.
+        
+        audio.resume();
+    }, {passive: false});
+
+    gameContainer.addEventListener('touchmove', (e) => {
+        // Prevent default scrolling
+        if (e.cancelable) e.preventDefault(); 
+        
+        if (isSwiping) return; 
+        
+        let touchX = e.touches[0].clientX;
+        let touchY = e.touches[0].clientY;
+        let diffX = touchX - touchStartX;
+        let diffY = touchY - touchStartY;
+        
+        // Detect Down Swipe (Slide) early
+        if (diffY > 50 && Math.abs(diffX) < 40) {
+            if (gameState === 'PLAYING') player.slide();
+            isSwiping = true;
+        }
     }, {passive: false});
 
     gameContainer.addEventListener('touchend', (e) => {
         if (gameState !== 'PLAYING') return;
-        
-        // Ignore clicks on UI buttons
         if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
         
+        if (isSwiping) return; // Already handled as a slide
+
         let touchEndX = e.changedTouches[0].clientX;
         let touchEndY = e.changedTouches[0].clientY;
-        
         let diffX = touchEndX - touchStartX;
         let diffY = touchEndY - touchStartY;
         
-        // Check for Horizontal Swipe (Priority: Must be dominant axis and significant distance)
-        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
-            if (diffX > 0) {
+        // Horizontal Swipe (Left/Right)
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+             if (diffX > 0) {
                 player.move('right');
                 setTimeout(() => player.move('stop'), 200);
             } else {
                 player.move('left');
                 setTimeout(() => player.move('stop'), 200);
             }
-        } 
-        // Vertical Swipe or Tap
-        else {
-            if (diffY > 40) {
-                // Swipe Down -> Slide
-                player.slide();
-            } else {
-                // Swipe Up or Tap -> Jump
-                player.jump();
-            }
         }
-        
-        audio.resume();
+        // Tap (Short movement) -> JUMP
+        else if (Math.abs(diffX) < 30 && Math.abs(diffY) < 30) {
+            player.jump();
+        }
+        // Up Swipe -> JUMP
+        else if (diffY < -30) {
+            player.jump();
+        }
     });
     
     gameContainer.addEventListener('mousedown', (e) => {
