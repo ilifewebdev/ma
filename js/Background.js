@@ -143,6 +143,23 @@ class BackgroundLayer {
                 ctx.beginPath();
                 ctx.ellipse(item.x, item.y, item.w, item.w/3, 0.2, 0, Math.PI*2);
                 ctx.stroke();
+            } else if (this.type === 'ruin') {
+                // Ruined building
+                ctx.fillStyle = item.color;
+                ctx.fillRect(item.x, item.y - item.h, item.w, item.h);
+                // Windows (broken)
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                for(let wy=10; wy<item.h; wy+=30) {
+                    if (Math.random() > 0.3) ctx.fillRect(item.x + 10, item.y - item.h + wy, 10, 15);
+                    if (Math.random() > 0.3) ctx.fillRect(item.x + 30, item.y - item.h + wy, 10, 15);
+                }
+                // Damage
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.moveTo(item.x, item.y - item.h);
+                ctx.lineTo(item.x + 15, item.y - item.h + 20);
+                ctx.lineTo(item.x + 30, item.y - item.h);
+                ctx.fill();
             }
         });
     }
@@ -187,6 +204,9 @@ function initBackgrounds(theme) {
     } else if (theme === 'rainbow') {
         bgLayers.push(new BackgroundLayer(0.2, 'cloud', '#F8BBD0')); // Pink clouds
         bgLayers.push(new BackgroundLayer(0.5, 'cloud', '#E1BEE7')); // Purple clouds
+    } else if (theme === 'zombie') {
+        bgLayers.push(new BackgroundLayer(0.2, 'ruin', '#424242')); // Dark ruins
+        bgLayers.push(new BackgroundLayer(0.5, 'ruin', '#616161')); // Closer ruins
     }
 }
 
@@ -219,6 +239,8 @@ function drawBackground() {
         skyColor1 = '#000000'; skyColor2 = '#1A237E'; 
     } else if (themeKey === 'rainbow') {
         skyColor1 = '#F06292'; skyColor2 = '#F8BBD0'; 
+    } else if (themeKey === 'zombie') {
+        skyColor1 = '#212121'; skyColor2 = '#3E2723'; 
     }
 
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);

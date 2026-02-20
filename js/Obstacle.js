@@ -59,6 +59,10 @@ class Obstacle {
             // Rainbow
             9: { w: 50, h: 30, e: '🐢', y: groundY - 30, move: 'crawl' }, // Turtle
             19: { w: 50, h: 50, e: '🦄', y: groundY - 120, move: 'fly' }, // Unicorn
+
+            // Zombie City
+            20: { w: 40, h: 50, e: '🧟', y: groundY - 50, move: 'run' }, // Zombie
+            21: { w: 50, h: 50, e: '👻', y: groundY - 120, move: 'float' }, // Ghost
         };
         
         const d = defs[id] || defs[0];

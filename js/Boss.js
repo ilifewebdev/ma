@@ -23,7 +23,7 @@ class Boss {
             this.moveType = 'ground'; 
         }
         
-        if (theme === 'beach') {
+        if (theme === 'beach' || theme === 'zombie') {
             this.moveType = 'ground'; 
         }
         
@@ -45,6 +45,8 @@ class Boss {
         if (theme === 'desert') return '🦂'; 
         if (theme === 'space') return '👾';
         if (theme === 'volcano') return '🐲';
+        if (theme === 'rainbow') return '🦄';
+        if (theme === 'zombie') return '🧟‍♂️';
         return '🦖'; 
     }
 
@@ -57,6 +59,8 @@ class Boss {
         if (theme === 'desert') return '🌵'; 
         if (theme === 'space') return '⚡'; 
         if (theme === 'volcano') return '🔥'; 
+        if (theme === 'rainbow') return '✨';
+        if (theme === 'zombie') return '🧠';
         return '☄️'; 
     }
     

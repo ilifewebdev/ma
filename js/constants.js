@@ -28,7 +28,10 @@ const LEVEL_CONFIGS = [
     { level: 9, theme: 'space', icon: '🚀', target: 2500, speed: 9.0, spawnRate: 75, obstacles: [8, 18] },
     
     // 10. Rainbow: Cloud, Unicorn Bird
-    { level: 10, theme: 'rainbow', icon: '🌈', target: 3000, speed: 10.0, spawnRate: 60, obstacles: [9, 19] }
+    { level: 10, theme: 'rainbow', icon: '🌈', target: 3000, speed: 10.0, spawnRate: 60, obstacles: [9, 19] },
+
+    // 11. Zombie City: Ruined City, Zombies
+    { level: 11, theme: 'zombie', icon: '🧟', target: 3500, speed: 10.5, spawnRate: 65, obstacles: [20, 21] }
 ];
 
 // Theme Colors
@@ -42,7 +45,8 @@ const THEME_COLORS = {
     forest: { ground: '#1B5E20', decor: '#2E7D32' },
     volcano:{ ground: '#3E2723', decor: '#BF360C' },
     space:  { ground: '#311B92', decor: '#6200EA' },
-    rainbow:{ ground: '#F48FB1', decor: '#CE93D8' }
+    rainbow:{ ground: '#F48FB1', decor: '#CE93D8' },
+    zombie: { ground: '#424242', decor: '#212121' }
 };
 
 // Game Constants
@@ -138,5 +142,106 @@ const SKINS = [
         unlocked: false,
         desc: '友谊公主，拥有强大的魔法。',
         trait: '开局自带磁铁'
+    }
+];
+
+// Accessories Configuration
+const ACCESSORIES = [
+    {
+        id: 'none',
+        name: '无头饰',
+        icon: '🚫',
+        price: 0,
+        unlocked: true,
+        desc: '保持自然美。'
+    },
+    {
+        id: 'flower',
+        name: '花朵',
+        icon: '🌸',
+        price: 150,
+        unlocked: false,
+        desc: '清新自然的小花。'
+    },
+    {
+        id: 'bow',
+        name: '蝴蝶结',
+        icon: '🎀',
+        price: 200,
+        unlocked: false,
+        desc: '可爱的粉色蝴蝶结。'
+    },
+    {
+        id: 'shades',
+        name: '墨镜',
+        icon: '😎',
+        price: 300,
+        unlocked: false,
+        desc: '酷酷的墨镜。'
+    },
+    {
+        id: 'santa',
+        name: '圣诞帽',
+        icon: '🎅',
+        price: 400,
+        unlocked: false,
+        desc: '节日快乐！'
+    },
+    {
+        id: 'crown',
+        name: '皇冠',
+        icon: '👑',
+        price: 500,
+        unlocked: false,
+        desc: '尊贵的象征。'
+    }
+];
+
+// Vehicles Configuration
+const VEHICLES = [
+    {
+        id: 'none',
+        name: '徒步奔跑',
+        icon: '🦵',
+        price: 0,
+        unlocked: true,
+        desc: '依靠强健的四肢奔跑。',
+        speedBonus: 0
+    },
+    {
+        id: 'bike',
+        name: '自行车',
+        icon: '🚲',
+        price: 500,
+        unlocked: false,
+        desc: '环保又健康，速度稍快。',
+        speedBonus: 0.5
+    },
+    {
+        id: 'scooter',
+        name: '滑板车',
+        icon: '🛴',
+        price: 800,
+        unlocked: false,
+        desc: '轻便灵活，滑行更远。',
+        speedBonus: 0.8
+    },
+    {
+        id: 'motorcycle',
+        name: '摩托车',
+        icon: '🏍️',
+        price: 1500,
+        unlocked: false,
+        desc: '轰鸣的引擎，极速狂飙！',
+        speedBonus: 1.5
+    },
+    {
+        id: 'car',
+        name: '敞篷跑车',
+        icon: '🚗',
+        price: 3000,
+        unlocked: false,
+        desc: '尊贵座驾，无视小碰撞。',
+        speedBonus: 2.0
     }
 ];

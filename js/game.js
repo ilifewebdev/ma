@@ -111,7 +111,9 @@ function update(deltaTime) {
     if (boss && boss.active) boss.update();
     
     player.update();
-    tutorial.update();
+    if (typeof tutorial !== 'undefined' && tutorial.update) {
+        tutorial.update();
+    }
     
     if (frames % Math.floor(config.spawnRate) === 0) {
          obstacles.push(new Obstacle(config.obstacles));

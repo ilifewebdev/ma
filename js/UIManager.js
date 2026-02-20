@@ -61,6 +61,50 @@ const loginScreen = document.getElementById('login-screen');
 const loginBtn = document.getElementById('login-btn');
 const nicknameInput = document.getElementById('nickname-input');
 
+let shopTab = 'skins'; // 'skins' or 'accessories'
+
+// Shop Tabs
+    document.getElementById('tab-skins').addEventListener('click', () => {
+        shopTab = 'skins';
+        updateShopTabs();
+        showShop();
+    });
+    document.getElementById('tab-accessories').addEventListener('click', () => {
+        shopTab = 'accessories';
+        updateShopTabs();
+        showShop();
+    });
+    document.getElementById('tab-vehicles').addEventListener('click', () => {
+        shopTab = 'vehicles';
+        updateShopTabs();
+        showShop();
+    });
+
+// Share Button
+if (shareBtn) {
+    shareBtn.addEventListener('click', showShare);
+}
+
+if (shopBtn) shopBtn.addEventListener('click', showShop);
+if (closeShopBtn) closeShopBtn.addEventListener('click', () => {
+    shopScreen.classList.add('hidden');
+    audio.playClick();
+});
+
+// Add Clear Save Button Logic
+const resetSaveBtn = document.getElementById('reset-save-btn');
+if (resetSaveBtn) {
+    resetSaveBtn.addEventListener('click', () => {
+        if (confirm('⚠️ 确定要清除所有存档吗？\n这将删除你的金币、解锁物品和通关记录。\n操作不可撤销！')) {
+            localStorage.removeItem(`ma_data_${currentUser}`);
+            localStorage.removeItem('ma_current_user');
+            location.reload();
+        }
+    });
+}
+
+if (achievementsBtn) achievementsBtn.addEventListener('click', showAchievements);
+
 function updateHUD() {
     const levelContainer = document.querySelector('.level-container');
     
@@ -83,57 +127,112 @@ function updateSkinButtons() {
     if(bgmBtn) bgmBtn.textContent = audio.bgmEnabled ? '🎵 音乐' : '🎵 静音';
 }
 
+function updateShopTabs() {
+    const tabSkins = document.getElementById('tab-skins');
+    const tabAccessories = document.getElementById('tab-accessories');
+    const tabVehicles = document.getElementById('tab-vehicles');
+    
+    // Reset all
+    tabSkins.className = 'btn small-btn secondary-btn';
+    tabAccessories.className = 'btn small-btn secondary-btn';
+    tabVehicles.className = 'btn small-btn secondary-btn';
+    
+    // Active one
+    if (shopTab === 'skins') {
+        tabSkins.classList.remove('secondary-btn');
+        tabSkins.classList.add('primary-btn');
+    } else if (shopTab === 'accessories') {
+        tabAccessories.classList.remove('secondary-btn');
+        tabAccessories.classList.add('primary-btn');
+    } else {
+        tabVehicles.classList.remove('secondary-btn');
+        tabVehicles.classList.add('primary-btn');
+    }
+}
+
 function showShop() {
     shopScreen.classList.remove('hidden');
     shopGrid.innerHTML = '';
     
     shopCoinCount.textContent = totalCoins;
     
-    SKINS.forEach((skin, index) => {
-        const item = document.createElement('div');
-        item.className = `shop-item ${index === currentSkinIndex ? 'selected' : ''} ${!skin.unlocked ? 'locked' : ''}`;
+    // Update Tabs UI
+    updateShopTabs();
+
+    let items = SKINS;
+    let currentIndex = currentSkinIndex;
+    
+    if (shopTab === 'accessories') {
+        items = ACCESSORIES;
+        currentIndex = currentAccessoryIndex;
+    } else if (shopTab === 'vehicles') {
+        items = VEHICLES;
+        currentIndex = currentVehicleIndex;
+    }
+    
+    items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `shop-item ${index === currentIndex ? 'selected' : ''} ${!item.unlocked ? 'locked' : ''}`;
         
         const preview = document.createElement('div');
         preview.className = 'shop-preview';
-        preview.innerHTML = `
-            <div style="width: 30px; height: 30px; background: ${skin.body}; border-radius: 50%; border: 2px solid ${skin.mane}; position: relative;">
-                ${skin.horn ? '<div style="position: absolute; top: -10px; left: 10px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 15px solid #FFD700;"></div>' : ''}
-            </div>
-        `;
+        
+        if (shopTab === 'skins') {
+            preview.innerHTML = `
+                <div style="width: 30px; height: 30px; background: ${item.body}; border-radius: 50%; border: 2px solid ${item.mane}; position: relative;">
+                    ${item.horn ? '<div style="position: absolute; top: -10px; left: 10px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 15px solid #FFD700;"></div>' : ''}
+                </div>
+            `;
+        } else {
+            // Accessories & Vehicles icon
+            preview.innerHTML = `<div style="font-size: 30px;">${item.icon || '📦'}</div>`;
+        }
         
         const info = document.createElement('div');
         info.className = 'shop-info';
         info.innerHTML = `
-            <div class="shop-name">${skin.name}</div>
-            <div class="shop-desc" style="font-size: 12px; color: #666; margin: 4px 0;">${skin.desc}</div>
-            <div class="shop-trait" style="font-size: 12px; color: #E91E63; font-weight: bold;">✨ ${skin.trait}</div>
+            <div class="shop-name">${item.name}</div>
+            <div class="shop-desc" style="font-size: 12px; color: #666; margin: 4px 0;">${item.desc}</div>
         `;
+        
+        if (item.trait) {
+             info.innerHTML += `<div class="shop-trait" style="font-size: 12px; color: #E91E63; font-weight: bold;">✨ ${item.trait}</div>`;
+        }
+        if (item.speedBonus) {
+             info.innerHTML += `<div class="shop-trait" style="font-size: 12px; color: #2196F3; font-weight: bold;">⚡ 速度 +${item.speedBonus}</div>`;
+        }
         
         const btn = document.createElement('button');
         btn.className = 'shop-btn';
         
-        if (index === currentSkinIndex) {
+        if (index === currentIndex) {
             btn.textContent = '使用中';
             btn.disabled = true;
             btn.classList.add('btn-select');
-        } else if (skin.unlocked) {
+        } else if (item.unlocked) {
             btn.textContent = '选择';
             btn.classList.add('btn-select');
             btn.onclick = () => {
-                currentSkinIndex = index;
+                if (shopTab === 'skins') currentSkinIndex = index;
+                else if (shopTab === 'accessories') currentAccessoryIndex = index;
+                else currentVehicleIndex = index;
+                
                 saveProgress();
                 audio.playClick();
                 showShop(); 
             };
         } else {
-            info.innerHTML += `<div class="shop-price">🪙 ${skin.price}</div>`;
+            info.innerHTML += `<div class="shop-price">🪙 ${item.price}</div>`;
             btn.textContent = '购买';
             btn.classList.add('btn-buy');
-            if (totalCoins >= skin.price) {
+            if (totalCoins >= item.price) {
                 btn.onclick = () => {
-                    totalCoins -= skin.price;
-                    skin.unlocked = true;
-                    currentSkinIndex = index;
+                    totalCoins -= item.price;
+                    item.unlocked = true;
+                    if (shopTab === 'skins') currentSkinIndex = index;
+                    else if (shopTab === 'accessories') currentAccessoryIndex = index;
+                    else currentVehicleIndex = index;
+                    
                     saveProgress();
                     audio.playWin(); 
                     showShop(); 
@@ -144,10 +243,10 @@ function showShop() {
             }
         }
         
-        item.appendChild(preview);
-        item.appendChild(info);
-        item.appendChild(btn);
-        shopGrid.appendChild(item);
+        div.appendChild(preview);
+        div.appendChild(info);
+        div.appendChild(btn);
+        shopGrid.appendChild(div);
     });
     
     audio.playClick();
@@ -317,7 +416,7 @@ function levelComplete() {
     
     totalCoins += coins;
 
-    if (currentLevel === maxUnlockedLevel && currentLevel < 10) {
+    if (currentLevel === maxUnlockedLevel && currentLevel < 11) {
         maxUnlockedLevel = currentLevel + 1;
     }
     
@@ -340,7 +439,7 @@ function levelComplete() {
     restartBtn.classList.remove('primary-btn');
     restartBtn.classList.add('secondary-btn');
     
-    if (currentLevel < 10) {
+    if (currentLevel < 11) {
         nextLevelBtn.classList.remove('hidden');
         nextLevelBtn.textContent = `➡️ 下一关`;
     } else {

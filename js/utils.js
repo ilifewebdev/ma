@@ -89,3 +89,31 @@ function checkCollision(p, o) {
         p.y + p.height - padding > o.y
     );
 }
+
+// Global drawing helper for vehicle wheels
+function drawWheel(c, x, y, r, rotation, filled=false) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.beginPath();
+    c.arc(0, 0, r, 0, Math.PI*2);
+    if (filled) {
+        c.fillStyle = '#333';
+        c.fill();
+        c.strokeStyle = '#555';
+        c.lineWidth = 2;
+        c.stroke();
+        // Inner detail
+        c.fillStyle = '#888';
+        c.beginPath(); c.arc(0, 0, r/2, 0, Math.PI*2); c.fill();
+    } else {
+        c.stroke();
+        // Spokes for bike
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(0, -r); c.lineTo(0, r);
+        c.moveTo(-r, 0); c.lineTo(r, 0);
+        c.stroke();
+    }
+    c.restore();
+}
