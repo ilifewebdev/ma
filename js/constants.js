@@ -31,7 +31,10 @@ const LEVEL_CONFIGS = [
     { level: 10, theme: 'rainbow', icon: '🌈', target: 3000, speed: 10.0, spawnRate: 60, obstacles: [9, 19] },
 
     // 11. Zombie City: Ruined City, Zombies
-    { level: 11, theme: 'zombie', icon: '🧟', target: 3500, speed: 10.5, spawnRate: 65, obstacles: [20, 21] }
+    { level: 11, theme: 'zombie', icon: '🧟', target: 3500, speed: 10.5, spawnRate: 65, obstacles: [20, 21] },
+
+    // 12. Crystal Empire: Crystal, Shadow King
+    { level: 12, theme: 'crystal', icon: '💎', target: 4000, speed: 11.0, spawnRate: 60, obstacles: [22, 23] }
 ];
 
 // Theme Colors
@@ -46,7 +49,8 @@ const THEME_COLORS = {
     volcano:{ ground: '#3E2723', decor: '#BF360C' },
     space:  { ground: '#311B92', decor: '#6200EA' },
     rainbow:{ ground: '#F48FB1', decor: '#CE93D8' },
-    zombie: { ground: '#424242', decor: '#212121' }
+    zombie: { ground: '#424242', decor: '#212121' },
+    crystal:{ ground: '#E1F5FE', decor: '#B3E5FC' } // Light Blue Crystal
 };
 
 // Game Constants
@@ -243,5 +247,56 @@ const VEHICLES = [
         unlocked: false,
         desc: '尊贵座驾，无视小碰撞。',
         speedBonus: 2.0
+    }
+];
+
+// Pets Configuration
+const PETS = [
+    {
+        id: 'none',
+        name: '无宠物',
+        icon: '🚫',
+        price: 0,
+        unlocked: true,
+        desc: '孤单的小马。',
+        type: 'none'
+    },
+    {
+        id: 'winona',
+        name: '维诺纳',
+        icon: '🐕',
+        price: 800,
+        unlocked: false,
+        desc: '牧羊犬，自动帮你吸取附近的金币。',
+        type: 'magnet'
+    },
+    {
+        id: 'spike',
+        name: '斯派克',
+        icon: '🐲',
+        price: 1000,
+        unlocked: false,
+        desc: '忠诚的小龙，每10秒找到一颗宝石（10金币）。',
+        type: 'coin',
+        interval: 600, // 10s at 60fps
+        value: 10
+    },
+    {
+        id: 'tank',
+        name: '坦科',
+        icon: '🐢',
+        price: 1500,
+        unlocked: false,
+        desc: '坚硬的乌龟，每局抵挡一次致命伤害。',
+        type: 'shield'
+    },
+    {
+        id: 'philomena',
+        name: '菲洛米娜',
+        icon: '🐦',
+        price: 2000,
+        unlocked: false,
+        desc: '凤凰涅槃，死亡后有概率复活（一次性）。',
+        type: 'revive'
     }
 ];

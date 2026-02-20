@@ -26,6 +26,11 @@ const achievementsBtn = document.getElementById('achievements-btn');
 const achievementsScreen = document.getElementById('achievements-screen');
 const achievementsList = document.getElementById('achievements-list');
 const closeAchievementsBtn = document.getElementById('close-achievements-btn');
+const missionsBtn = document.getElementById('missions-btn');
+const missionsScreen = document.getElementById('missions-screen');
+const missionsList = document.getElementById('missions-list');
+const closeMissionsBtn = document.getElementById('close-missions-btn');
+
 const helpBtn = document.getElementById('help-btn');
 const helpScreen = document.getElementById('help-screen');
 const closeHelpBtn = document.getElementById('close-help-btn');
@@ -79,13 +84,32 @@ let shopTab = 'skins'; // 'skins' or 'accessories'
         updateShopTabs();
         showShop();
     });
+    document.getElementById('tab-pets').addEventListener('click', () => {
+        shopTab = 'pets';
+        updateShopTabs();
+        showShop();
+    });
 
 // Share Button
 if (shareBtn) {
     shareBtn.addEventListener('click', showShare);
 }
 
-if (shopBtn) shopBtn.addEventListener('click', showShop);
+updateMissionUI();
+    // Daily Mission UI
+    /* Removed old overlay UI
+    const missionContainer = document.createElement('div');
+    missionContainer.id = 'daily-missions';
+    missionContainer.style = 'position: absolute; top: 60px; right: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); max-width: 200px; font-size: 12px; z-index: 100;';
+    
+    // Only show on Map
+    
+    document.getElementById('game-container').appendChild(missionContainer);
+    
+    updateMissionUI();
+    */
+
+    if (shopBtn) shopBtn.addEventListener('click', showShop);
 if (closeShopBtn) closeShopBtn.addEventListener('click', () => {
     shopScreen.classList.add('hidden');
     audio.playClick();
@@ -103,7 +127,36 @@ if (resetSaveBtn) {
     });
 }
 
+// Add Money Button Logic
+const addMoneyBtn = document.getElementById('add-money-btn');
+if (addMoneyBtn) {
+    addMoneyBtn.addEventListener('click', () => {
+        totalCoins += 10000;
+        saveProgress();
+        
+        // Visual feedback
+        audio.playWin();
+        if (shopCoinCount) shopCoinCount.textContent = totalCoins;
+        showToast('💰 获得 10000 金币！');
+        
+        // Refresh shop if open
+        if (!shopScreen.classList.contains('hidden')) {
+            showShop();
+        }
+    });
+}
+
 if (achievementsBtn) achievementsBtn.addEventListener('click', showAchievements);
+if (closeAchievementsBtn) closeAchievementsBtn.addEventListener('click', () => {
+    achievementsScreen.classList.add('hidden');
+    audio.playClick();
+});
+
+if (missionsBtn) missionsBtn.addEventListener('click', showMissions);
+if (closeMissionsBtn) closeMissionsBtn.addEventListener('click', () => {
+    missionsScreen.classList.add('hidden');
+    audio.playClick();
+});
 
 function updateHUD() {
     const levelContainer = document.querySelector('.level-container');
@@ -131,24 +184,56 @@ function updateShopTabs() {
     const tabSkins = document.getElementById('tab-skins');
     const tabAccessories = document.getElementById('tab-accessories');
     const tabVehicles = document.getElementById('tab-vehicles');
-    
-    // Reset all
-    tabSkins.className = 'btn small-btn secondary-btn';
-    tabAccessories.className = 'btn small-btn secondary-btn';
-    tabVehicles.className = 'btn small-btn secondary-btn';
-    
-    // Active one
+const tabPets = document.getElementById('tab-pets');
+
+// Reset all
+tabSkins.className = 'btn small-btn secondary-btn';
+tabAccessories.className = 'btn small-btn secondary-btn';
+tabVehicles.className = 'btn small-btn secondary-btn';
+tabPets.className = 'btn small-btn secondary-btn';
+
+// Active one
     if (shopTab === 'skins') {
         tabSkins.classList.remove('secondary-btn');
         tabSkins.classList.add('primary-btn');
     } else if (shopTab === 'accessories') {
         tabAccessories.classList.remove('secondary-btn');
         tabAccessories.classList.add('primary-btn');
-    } else {
+    } else if (shopTab === 'vehicles') {
         tabVehicles.classList.remove('secondary-btn');
         tabVehicles.classList.add('primary-btn');
+    } else if (shopTab === 'pets') {
+        tabPets.classList.remove('secondary-btn');
+        tabPets.classList.add('primary-btn');
     }
 }
+
+function updateMissionUI() {
+    // Check if tasks available for button badge
+    const badge = document.getElementById('mission-badge');
+    let hasClaimable = false;
+    
+    dailyMissions.missions.forEach(m => {
+        if (!m.claimed && m.current >= m.target) hasClaimable = true;
+    });
+    
+    if (missionsBtn) {
+        if (hasClaimable) {
+            missionsBtn.style.border = '2px solid #FFD700';
+            missionsBtn.innerHTML = '🎯 任务 <span style="color: #FFD700;">●</span>';
+        } else {
+            missionsBtn.style.border = '';
+            missionsBtn.innerHTML = '🎯 任务';
+        }
+    }
+}
+
+// Hook into showMap to update UI
+const originalShowMap = showMap;
+showMap = function() {
+    originalShowMap();
+    updateMissionUI();
+};
 
 function showShop() {
     shopScreen.classList.remove('hidden');
@@ -168,6 +253,9 @@ function showShop() {
     } else if (shopTab === 'vehicles') {
         items = VEHICLES;
         currentIndex = currentVehicleIndex;
+    } else if (shopTab === 'pets') {
+        items = PETS;
+        currentIndex = currentPetIndex;
     }
     
     items.forEach((item, index) => {
@@ -184,7 +272,7 @@ function showShop() {
                 </div>
             `;
         } else {
-            // Accessories & Vehicles icon
+            // Accessories & Vehicles & Pets icon
             preview.innerHTML = `<div style="font-size: 30px;">${item.icon || '📦'}</div>`;
         }
         
@@ -201,6 +289,9 @@ function showShop() {
         if (item.speedBonus) {
              info.innerHTML += `<div class="shop-trait" style="font-size: 12px; color: #2196F3; font-weight: bold;">⚡ 速度 +${item.speedBonus}</div>`;
         }
+        if (item.type && item.type !== 'none') {
+             info.innerHTML += `<div class="shop-trait" style="font-size: 12px; color: #4CAF50; font-weight: bold;">🐾 宠物技能</div>`;
+        }
         
         const btn = document.createElement('button');
         btn.className = 'shop-btn';
@@ -215,7 +306,8 @@ function showShop() {
             btn.onclick = () => {
                 if (shopTab === 'skins') currentSkinIndex = index;
                 else if (shopTab === 'accessories') currentAccessoryIndex = index;
-                else currentVehicleIndex = index;
+                else if (shopTab === 'vehicles') currentVehicleIndex = index;
+                else currentPetIndex = index;
                 
                 saveProgress();
                 audio.playClick();
@@ -231,7 +323,8 @@ function showShop() {
                     item.unlocked = true;
                     if (shopTab === 'skins') currentSkinIndex = index;
                     else if (shopTab === 'accessories') currentAccessoryIndex = index;
-                    else currentVehicleIndex = index;
+                    else if (shopTab === 'vehicles') currentVehicleIndex = index;
+                    else currentPetIndex = index;
                     
                     saveProgress();
                     audio.playWin(); 
@@ -292,17 +385,84 @@ function showAchievements() {
     audio.playClick();
 }
 
+function showMissions() {
+    missionsScreen.classList.remove('hidden');
+    missionsList.innerHTML = '';
+    
+    dailyMissions.missions.forEach(m => {
+        const div = document.createElement('div');
+        // Use achievements style for consistency but slightly modified for tasks
+        div.className = 'achievement-item'; 
+        div.style.alignItems = 'center'; // Vertical align
+        div.style.padding = '12px'; // More padding
+        
+        const isComplete = m.current >= m.target;
+        const progressPercent = Math.min(100, Math.floor((m.current / m.target) * 100));
+        
+        div.innerHTML = `
+            <div class="achievement-icon" style="background: ${isComplete ? '#4CAF50' : '#E0E0E0'}; color: white; width: 50px; height: 50px; font-size: 24px; flex-shrink: 0; margin-right: 15px;">
+                ${isComplete ? '✅' : '🎯'}
+            </div>
+            <div class="achievement-info" style="flex: 1; min-width: 0;">
+                <div class="achievement-title" style="font-size: 16px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m.desc}</div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-size: 12px; color: #666;">进度: ${Math.min(m.current, m.target)}/${m.target}</span>
+                    <span style="font-size: 13px; color: #FF9800; font-weight: bold;">🪙 +${m.reward}</span>
+                </div>
+                
+                <div style="width: 100%; height: 8px; background: #EEE; border-radius: 4px; overflow: hidden;">
+                    <div style="width: ${progressPercent}%; height: 100%; background: ${isComplete ? '#4CAF50' : '#2196F3'}; transition: width 0.3s;"></div>
+                </div>
+            </div>
+        `;
+        
+        const actionDiv = document.createElement('div');
+        actionDiv.style.marginLeft = '15px';
+        actionDiv.style.flexShrink = '0';
+        
+        if (isComplete && !m.claimed) {
+            const btn = document.createElement('button');
+            btn.textContent = '领取';
+            btn.className = 'btn small-btn primary-btn';
+            btn.style = 'background: #FFD700; color: #333; padding: 8px 20px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: none;';
+            btn.onclick = () => {
+                m.claimed = true;
+                totalCoins += m.reward;
+                saveProgress();
+                audio.playWin();
+                showMissions(); // Refresh list
+                updateMissionUI(); // Refresh badge
+                if (document.getElementById('shop-coin-count')) document.getElementById('shop-coin-count').textContent = totalCoins;
+            };
+            actionDiv.appendChild(btn);
+        } else if (m.claimed) {
+             div.classList.add('unlocked'); // Dim it
+             actionDiv.innerHTML = `<span style="color: #4CAF50; font-weight: bold; font-size: 24px;">✓</span>`;
+        } else {
+             actionDiv.innerHTML = `<span style="color: #999; font-size: 12px; white-space: nowrap;">进行中</span>`;
+        }
+        
+        div.appendChild(actionDiv);
+        missionsList.appendChild(div);
+    });
+    
+    audio.playClick();
+}
+
 function startEndlessMode() {
     if (maxUnlockedLevel <= 1 && endlessBestScore === 0) return; 
     
     isEndless = true;
     
-    const randomLevelIdx = Math.floor(Math.random() * LEVEL_CONFIGS.length);
-    const randomTheme = LEVEL_CONFIGS[randomLevelIdx].theme;
+    // Initialize endless mode index globally
+    window.currentEndlessLevelIndex = Math.floor(Math.random() * LEVEL_CONFIGS.length);
+    const randomTheme = LEVEL_CONFIGS[window.currentEndlessLevelIndex].theme;
     
     currentLevel = 1; 
     
     applyTheme(randomTheme);
+    initBackgrounds(randomTheme);
     
     mapScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
@@ -322,6 +482,7 @@ function showMap() {
     hud.classList.add('hidden');
     mapScreen.classList.remove('hidden');
     achievementsScreen.classList.add('hidden'); 
+    missionsScreen.classList.add('hidden');
     helpScreen.classList.add('hidden'); 
     calendarScreen.classList.add('hidden');
     loginScreen.classList.add('hidden');
@@ -343,6 +504,14 @@ function showMap() {
         const btn = document.createElement('button');
         btn.classList.add('level-btn');
         
+        // Scene preview background
+        const preview = document.createElement('div');
+        preview.className = 'level-scene-preview';
+        
+        // Set color based on theme
+        const themeColors = THEME_COLORS[config.theme] || THEME_COLORS['meadow'];
+        preview.style.background = `linear-gradient(to bottom, ${themeColors.sky} 0%, ${themeColors.ground} 100%)`;
+        
         const numSpan = document.createElement('span');
         numSpan.classList.add('level-num');
         numSpan.textContent = config.level;
@@ -351,6 +520,7 @@ function showMap() {
         iconSpan.classList.add('level-icon');
         iconSpan.textContent = config.icon;
         
+        btn.appendChild(preview);
         btn.appendChild(numSpan);
         btn.appendChild(iconSpan);
         
@@ -358,6 +528,16 @@ function showMap() {
             btn.classList.add('unlocked');
             if (config.level < maxUnlockedLevel) {
                 btn.classList.add('completed');
+                
+                // Add star for completed levels
+                const star = document.createElement('div');
+                star.textContent = '⭐';
+                star.style.position = 'absolute';
+                star.style.bottom = '2px';
+                star.style.right = '2px';
+                star.style.fontSize = '12px';
+                star.style.zIndex = '2';
+                btn.appendChild(star);
             }
             btn.onclick = () => {
                 audio.playClick();
@@ -366,7 +546,9 @@ function showMap() {
             };
         } else {
             btn.classList.add('locked');
+            preview.style.filter = 'grayscale(1) brightness(0.7)'; // Dim preview for locked
             btn.onclick = () => {
+                // Shake animation or sound for locked?
             };
         }
         levelGrid.appendChild(btn);

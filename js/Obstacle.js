@@ -63,6 +63,10 @@ class Obstacle {
             // Zombie City
             20: { w: 40, h: 50, e: '🧟', y: groundY - 50, move: 'run' }, // Zombie
             21: { w: 50, h: 50, e: '👻', y: groundY - 120, move: 'float' }, // Ghost
+            
+            // Crystal Empire
+            22: { w: 50, h: 50, e: '💂', y: groundY - 50, move: 'guard' }, // Shadow Guard
+            23: { w: 40, h: 40, e: '🔮', y: groundY - 120, move: 'pulse' }, // Dark Crystal
         };
         
         const d = defs[id] || defs[0];
@@ -78,6 +82,12 @@ class Obstacle {
             this.y = this.baseY - Math.abs(Math.sin((frames + this.timeOffset) * 0.15)) * 20;
         } else if (this.moveType === 'float') {
             this.y = this.baseY + Math.sin((frames + this.timeOffset) * 0.05) * 10;
+        } else if (this.moveType === 'pulse') {
+             // Scale effect handled in draw, slight float here
+             this.y = this.baseY + Math.sin((frames + this.timeOffset) * 0.1) * 5;
+        } else if (this.moveType === 'guard') {
+             // Move forward slightly
+             this.x -= 2; 
         }
     }
 
@@ -88,12 +98,17 @@ class Obstacle {
         const centerY = this.y + this.height / 2;
         ctx.translate(centerX, centerY);
         
-        if (this.moveType === 'crawl' || this.moveType === 'run') {
+        if (this.moveType === 'crawl' || this.moveType === 'run' || this.moveType === 'guard') {
              ctx.rotate(Math.sin(frames * 0.2) * 0.1);
         }
         
         if (this.moveType === 'float') {
              ctx.rotate(Math.sin(frames * 0.05) * 0.1);
+        }
+        
+        if (this.moveType === 'pulse') {
+             const scale = 1 + Math.sin(frames * 0.2) * 0.2;
+             ctx.scale(scale, scale);
         }
         
         ctx.font = '40px Arial';

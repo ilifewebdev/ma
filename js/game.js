@@ -30,18 +30,37 @@ function startGame(level) {
     
     if (typeof level === 'number') currentLevel = level;
     
+    // Initialize Endless Mode variables
+    window.currentEndlessLevelIndex = 0;
+    window.nextEndlessMilestone = 500;
+    
     const config = LEVEL_CONFIGS[currentLevel - 1];
-    applyTheme(config.theme);
-
-    initBackgrounds(config.theme); 
-    boss = new Boss(config.theme);
+    
+    // Set initial theme
+    if (isEndless) {
+        window.currentTheme = LEVEL_CONFIGS[0].theme;
+        speed = LEVEL_CONFIGS[0].speed;
+    } else {
+        window.currentTheme = config.theme;
+        speed = config.speed;
+    }
+    
+    applyTheme(window.currentTheme);
+    initBackgrounds(window.currentTheme); 
+    
+    // Only create boss in normal mode
+    if (!isEndless) {
+        boss = new Boss(config.theme);
+    } else {
+        boss = null;
+    }
 
     gameState = 'PLAYING';
     score = 0;
     coins = 0; 
     hearts = 3;
     frames = 0;
-    speed = config.speed;
+    // speed is already set above
     obstacles = [];
     particles = [];
     powerups = [];
@@ -50,9 +69,20 @@ function startGame(level) {
     
     player.reset();
     
+    // Skin Skills
     if (SKINS[currentSkinIndex].id === 'twilight') {
         activeMagnet = 600; 
         showToast('✨ 紫悦公主：魔法磁铁启动！');
+    }
+    
+    // Pet Skills (Start of game)
+    const pet = PETS[currentPetIndex];
+    if (pet && pet.id === 'tank') {
+        hasShield = true;
+        showToast('🐢 坦科：护盾已激活！');
+    } else if (pet && pet.id === 'philomena') {
+        hasRevive = true;
+        showToast('🐦 菲洛米娜：涅槃重生准备就绪！');
     }
     
     startScreen.classList.add('hidden');
@@ -74,7 +104,12 @@ const targetFPS = 60;
 const frameInterval = 1000 / targetFPS;
 
 function update(deltaTime) {
-    const config = LEVEL_CONFIGS[currentLevel - 1];
+    let config;
+    if (isEndless) {
+        config = LEVEL_CONFIGS[window.currentEndlessLevelIndex];
+    } else {
+        config = LEVEL_CONFIGS[currentLevel - 1];
+    }
     
     // Always increment frames for animations
     frames++;
@@ -88,6 +123,32 @@ function update(deltaTime) {
     // For this simple game, fixed timestep (throttled loop) is safer to prevent tunneling.
 
     score += speed * CONSTANTS.meterScale;
+
+    // Endless Mode Logic
+    if (isEndless && window.nextEndlessMilestone && score >= window.nextEndlessMilestone) {
+        window.nextEndlessMilestone += 500;
+        
+        // Increase speed (cap at 15)
+        if (speed < 15) {
+            speed += 0.5;
+        }
+        
+        // Change theme
+        window.currentEndlessLevelIndex = (window.currentEndlessLevelIndex + 1) % LEVEL_CONFIGS.length;
+        window.currentTheme = LEVEL_CONFIGS[window.currentEndlessLevelIndex].theme;
+        
+        // Apply background and theme
+        initBackgrounds(window.currentTheme);
+        applyTheme(window.currentTheme);
+        
+        // Notify user
+        const newThemeName = LEVEL_CONFIGS[window.currentEndlessLevelIndex].icon + ' ' + window.currentTheme.toUpperCase();
+        showToast(`进入新区域: ${newThemeName} (速度: ${speed.toFixed(1)})`);
+        
+        // Bonus coins
+        coins += 50;
+        showToast('获得奖励: 50 金币');
+    }
     
     // ... rest of update logic ...
 
@@ -136,6 +197,18 @@ function update(deltaTime) {
         }
     }
     
+    // Pet Skills (Update Loop)
+    const pet = PETS[currentPetIndex];
+    if (pet && pet.id === 'winona' && frames % 5 === 0) {
+        // Magnet effect for Winona
+        coinsArray.forEach(c => {
+            if (c.x < player.x + 300 && c.x > player.x - 50) {
+                c.y += (player.y - c.y) * 0.1;
+                c.x += (player.x - c.x) * 0.1;
+            }
+        });
+    }
+
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.update();

@@ -59,12 +59,23 @@ const player = {
             audio.playJump();
             triggerHaptic('medium');
             createParticles(this.x + this.width/2, this.y + this.height, 5, '#FFF');
+            
+            // Daily Mission: Jump
+            dailyMissions.missions.forEach(m => {
+                if (!m.claimed && m.id === 'jump') m.current++;
+            });
+            
         } else if (this.jumpCount < 2) {
             this.vy = CONSTANTS.doubleJumpForce + jumpBonus;
             this.jumpCount = 2;
             audio.playJump();
             triggerHaptic('medium');
             createParticles(this.x + this.width/2, this.y + this.height, 8, '#FFD700');
+            
+            // Daily Mission: Jump
+            dailyMissions.missions.forEach(m => {
+                if (!m.claimed && m.id === 'jump') m.current++;
+            });
         }
     },
 
@@ -454,6 +465,84 @@ const player = {
             }
             
             c.restore();
+        }
+
+        // 9.9. Pets
+        const pet = PETS[currentPetIndex];
+        if (pet && pet.id !== 'none') {
+            c.save();
+            // Pet position: Floating in FRONT of pony (Player facing right)
+            // Bobbing animation
+            const bobY = Math.sin(frames * 0.1) * 5;
+            const petX = 80; // Changed from -30 (behind) to 80 (front)
+            const petY = 20 + bobY;
+            
+            c.translate(petX, petY);
+            
+            // Draw Pet based on type
+            c.font = '24px Arial';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            
+            // Add a DARKER background circle to make pet more visible (without looking like a ghost)
+            // c.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Old
+            // c.beginPath();
+            // c.arc(0, 0, 18, 0, Math.PI * 2);
+            // c.fill();
+            
+            // Just shadow is enough if we add a white stroke/glow to the emoji itself?
+            // Canvas fillText doesn't support stroke well for emojis.
+            // Let's try a subtle dark glow behind the emoji
+            c.shadowColor = 'rgba(0,0,0,0.8)';
+            c.shadowBlur = 5;
+            
+            // Shadow
+            c.fillStyle = 'rgba(0,0,0,0.3)';
+            c.beginPath();
+            c.ellipse(0, 15, 8, 3, 0, 0, Math.PI*2);
+            c.fill();
+            
+            // Icon
+            // Flip the pet icon horizontally so it faces forward (right)
+            c.save();
+            c.scale(-1, 1); 
+            // Draw slightly larger to be clearer
+            c.font = '28px Arial'; 
+            c.fillText(pet.icon, 0, 0);
+            c.restore();
+            
+            c.shadowBlur = 0; // Reset shadow
+            
+            c.restore();
+            
+            // Pet Logic (Run every frame)
+            if (gameState === 'PLAYING' || gameState === 'ENDLESS') {
+                if (pet.id === 'spike') {
+                    // Coin generation
+                    if (frames % pet.interval === 0) {
+                        coins += pet.value;
+                        createParticles(this.x + petX + 25, this.y + petY + 25, 5, '#FFD700'); // Sparkle
+                        // Show +10 text
+                        // (Simplified: Just add to score/coins, UI updates automatically)
+                    }
+                } else if (pet.id === 'tank') {
+                    // Shield logic handled in Game.js collision
+                    // Visual indicator
+                    if (!hasShield) {
+                        // Tank gives a shield effectively, but maybe we treat it as a special "pet shield"
+                        // For simplicity, let's say Tank GIVES you a shield at start of level, 
+                        // or regenerates one.
+                        // Let's implement: Tank grants 'hasShield' if not present, once per level.
+                        // We need a flag for "petAbilityUsed"
+                    }
+                } else if (pet.id === 'winona') {
+                    // Magnet logic handled in Game.js update
+                    // Visuals
+                    if (frames % 20 === 0) {
+                        createParticles(this.x - 10, this.y + 20, 1, '#FFF');
+                    }
+                }
+            }
         }
 
         // 10. Shield Bubble

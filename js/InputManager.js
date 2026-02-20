@@ -103,7 +103,13 @@ function setupInputs() {
     });
 
     startBtn.addEventListener('click', () => startGame(currentLevel));
-    restartBtn.addEventListener('click', () => startGame(currentLevel));
+    restartBtn.addEventListener('click', () => {
+        if (isEndless) {
+            // Randomize theme for restart in endless mode
+            window.currentEndlessLevelIndex = Math.floor(Math.random() * LEVEL_CONFIGS.length);
+        }
+        startGame(currentLevel);
+    });
     nextLevelBtn.addEventListener('click', () => {
         if (currentLevel < 10) {
             startGame(currentLevel + 1);

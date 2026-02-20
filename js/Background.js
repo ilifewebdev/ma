@@ -211,8 +211,14 @@ function initBackgrounds(theme) {
 }
 
 function drawBackground() {
-    const config = LEVEL_CONFIGS[currentLevel - 1];
-    const themeKey = (config && config.theme) ? config.theme : 'meadow';
+    // Priority: global currentTheme > level config > default
+    let themeKey = 'meadow';
+    
+    if (typeof window.currentTheme !== 'undefined') {
+        themeKey = window.currentTheme;
+    } else if (LEVEL_CONFIGS[currentLevel - 1]) {
+        themeKey = LEVEL_CONFIGS[currentLevel - 1].theme;
+    }
     
     // Sky Gradient
     let skyColor1 = '#87CEEB';

@@ -65,18 +65,44 @@
                     <button id="logout-btn" class="btn secondary-btn small-btn" style="font-size: 14px; padding: 5px 10px;">👋 切换账号</button>
                 </div>
                 
-                <div class="map-actions-grid">
-                    <button id="endless-btn" class="btn primary-btn locked-mode full-width">♾️ 快乐无限跑</button>
-                    <button id="achievements-btn" class="btn secondary-btn small-btn">⭐ 成就</button>
-                    <button id="shop-btn" class="btn secondary-btn small-btn">🏪 商店</button>
-                    <button id="help-btn" class="btn secondary-btn small-btn">❓ 玩法</button>
-                    <button id="calendar-btn" class="btn secondary-btn small-btn">📅 日历</button>
-                    <button id="bgm-btn" class="btn secondary-btn small-btn">🎵 音乐</button>
-                </div>
-
-                <div id="level-grid" class="level-grid">
+                <div id="level-grid" class="level-grid" style="grid-template-columns: repeat(4, 1fr) !important; margin-bottom: 20px;">
                     <!-- 关卡按钮将由 JS 动态生成 -->
                 </div>
+
+                <div class="map-actions-grid" style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px;">
+                    <!-- 无限跑独占一行 -->
+                    <button id="endless-btn" class="btn primary-btn locked-mode" style="width: 90%; max-width: 400px; padding: 15px; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">♾️ 快乐无限跑</button>
+                    
+                    <!-- 其他功能按钮，3列布局 -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 90%; max-width: 400px;">
+                        <button id="shop-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">🏪</span> 
+                            <span style="font-size: 16px;">商店</span>
+                        </button>
+                        <button id="missions-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">🎯</span> 
+                            <span style="font-size: 16px;">任务</span>
+                        </button>
+                        <button id="achievements-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">⭐</span> 
+                            <span style="font-size: 16px;">成就</span>
+                        </button>
+                        <button id="calendar-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">📅</span> 
+                            <span style="font-size: 16px;">日历</span>
+                        </button>
+                        <button id="bgm-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">🎵</span> 
+                            <span style="font-size: 16px;">音乐</span>
+                        </button>
+                        <button id="help-btn" class="btn secondary-btn small-btn" style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px;">
+                            <span style="font-size: 20px;">❓</span> 
+                            <span style="font-size: 16px;">玩法</span>
+                        </button>
+                        <button id="add-money-btn" class="btn secondary-btn small-btn hidden" style="background-color: #FFD700; color: #333; grid-column: span 3;">💰 领钱 (+1W)</button>
+                    </div>
+                </div>
+
                 <div class="map-footer">
                 </div>
             </div>
@@ -93,12 +119,24 @@
                         <button id="tab-skins" class="btn small-btn primary-btn" style="font-size: 14px; padding: 5px 10px;">角色</button>
                         <button id="tab-accessories" class="btn small-btn secondary-btn" style="font-size: 14px; padding: 5px 10px;">头饰</button>
                         <button id="tab-vehicles" class="btn small-btn secondary-btn" style="font-size: 14px; padding: 5px 10px;">座驾</button>
+                        <button id="tab-pets" class="btn small-btn secondary-btn" style="font-size: 14px; padding: 5px 10px;">宠物</button>
                     </div>
 
                     <div id="shop-grid" class="shop-grid">
                         <!-- 动态生成 -->
                     </div>
                     <button id="close-shop-btn" class="btn secondary-btn">🔙 返回地图</button>
+                </div>
+            </div>
+
+            <!-- 任务界面 -->
+            <div id="missions-screen" class="screen hidden">
+                <div class="modal large-modal">
+                    <h2>🎯 每日任务</h2>
+                    <div id="missions-list" class="missions-list">
+                        <!-- 动态生成 -->
+                    </div>
+                    <button id="close-missions-btn" class="btn secondary-btn">🔙 返回地图</button>
                 </div>
             </div>
 
